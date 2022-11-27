@@ -22,7 +22,7 @@ import k_and_s_pkg::*;
 
 );
 
-logic [15:0] instruction; 
+logic [15:0] instruction; //ir_reg
 logic [15:0] alu_out;
 logic [15:0] bus_a;
 logic [15:0] bus_b;
@@ -262,5 +262,5 @@ always_comb begin : decoder
             decoded_instruction = I_NOP;
         end
     endcase
-end
+
 endmodule : data_path
