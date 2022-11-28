@@ -21,8 +21,11 @@ import k_and_s_pkg::*;
     input  logic             [15:0] data_in
 
 );
-
-logic [15:0] instruction; //ir_reg
+logic [15:0] r0;
+logic [15:0] r1;
+logic [15:0] r2;
+logic [15:0] r3;
+logic [15:0] instruction; 
 logic [15:0] alu_out;
 logic [15:0] bus_a;
 logic [15:0] bus_b;
@@ -220,47 +223,48 @@ always_comb begin : decoder
         end
         
         8'b0000_0001 : begin // BRANCH
-            decode_instruction = I_BRANCH;
+            decoded_instruction = I_BRANCH;
             mem_addr = instruction[4:0];
         end
         
         8'b0000_0010 : begin // BZERO
-            decode_instruction = I_BZERO;
+            decoded_instruction = I_BZERO;
             mem_addr = instruction[4:0];
         end
         
         8'b0000_0011 : begin // BNEG
-            decode_instruction = I_BNEG;
+            decoded_instruction = I_BNEG;
             mem_addr = instruction[4:0];
         end
         
         8'b0000_0101 : begin // BOV
-            decode_instruction = I_BOV;
+            decoded_instruction = I_BOV;
             mem_addr = instruction[4:0];
         end
         
         8'b0000_0110 : begin // BNOV
-            decode_instruction = I_BNOV;
+            decoded_instruction = I_BNOV;
             mem_addr = instruction[4:0];
         end
         
         8'b0000_1010 : begin // BNNEG
-            decode_instruction = I_BNNEG;
+            decoded_instruction = I_BNNEG;
             mem_addr = instruction[4:0];
         end
         
         8'b0000_1011 : begin // BNZERO
-            decode_instruction = I_BNZERO;
+            decoded_instruction = I_BNZERO;
             mem_addr = instruction[4:0];
         end
         
         8'b1111_111 : begin // HALT
-            decoded_instruction = I_HATL;
+            decoded_instruction = I_HALT;
         end
         
         default : begin // NOP
             decoded_instruction = I_NOP;
         end
     endcase
+end
 
 endmodule : data_path
