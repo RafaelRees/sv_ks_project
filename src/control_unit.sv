@@ -24,12 +24,15 @@ import k_and_s_pkg::*;
 typedef enum
 {
     BUSCA_INSTR
-   ,REG_INSTR 
+   ,REG_INSTR
+   ,REG_OPER 
    ,DECODIFICA
+   ,STORE_1
+   ,STORE_2
    ,LOAD_1
    ,LOAD_2
-   ,ESCREVE_REG
    ,FIM_PROGRAMA
+   ,HALT
 } state_t;
 
 state_t state;
@@ -65,12 +68,114 @@ always_comb begin : calc_next_state
         end
         DECODIFICA : begin
             next_state = BUSCA_INSTR;
-            if(decoded_instruction == I_HALT)
-                next_state = FIM_PROGRAMA;
-            else if (decoded_instruction == I_LOAD) begin
-                next_state = LOAD_1;
-                addr_sel = 1'b1;
-            end   
+            case(decoded_instruction)
+                I_LOAD: begin
+                    next_state = LOAD_1;
+                    addr_sel = 1'b1;
+                end
+                I_STORE: begin
+                    next_state = STORE_1;
+                    addr_sel = 1'b1;
+                end
+                I_MOVE: begin
+                    next_state = REG_OPER;
+                    operation = 2'b10;
+                end
+                I_BRANCH: begin
+                    next_state = BUSCA_INSTR;
+                    branch = 1'b1;
+                    pc_enable = 1'b1;
+                end
+                I_ADD: begin
+                    next_state = REG_OPER;
+                    operation = 2'b00;
+                end
+                I_SUB: begin
+                    next_state = REG_OPER;
+                    operation = 2'b11;
+                end
+                I_AND: begin
+                    next_state = REG_OPER;
+                    operation = 2'b01;
+                end
+                I_OR: begin
+                    next_state = REG_OPER;
+                    operation = 2'b10;
+                end
+                I_BNEG: begin 
+                    next_state = BUSCA_INSTR;
+                    if(neg_op) begin
+                        branch = 1'b1;
+                        pc_enable = 1'b1;
+                    end 
+                end
+                I_BNNEG: begin
+                    next_state = BUSCA_INSTR;
+                    if(!neg_op) begin
+                        branch = 1'b1;
+                        pc_enable = 1'b1;
+                    end
+                end
+                I_BZERO: begin
+                    next_state = BUSCA_INSTR;
+                    if(zero_op) begin
+                        branch = 1'b1;
+                        pc_enable = 1'b1;
+                    end
+                end
+                I_BNZERO: begin
+                    next_state = BUSCA_INSTR;
+                    if(!zero_op) begin
+                        branch = 1'b1;
+                        pc_enable = 1'b1;
+                    end
+                end
+                I_BOV: begin
+                    next_state = BUSCA_INSTR;
+                    if(unsigned_overflow) begin
+                        branch = 1'b1;
+                        pc_enable = 1'b1;
+                    end
+                end
+                I_BNOV: begin
+                    next_state = BUSCA_INSTR;
+                    if(!unsigned_overflow) begin
+                        branch = 1'b1;
+                        pc_enable = 1'b1;
+                    end
+                end
+                I_HALT: begin
+                    next_state = FIM_PROGRAMA;
+                end
+            endcase
+        end
+        REG_OPER : begin
+            next_state = BUSCA_INSTR;
+            write_reg_enable = 1'b1;
+
+            case(decoded_instruction)
+                I_ADD: begin
+                    operation = 2'b00;
+                end
+                I_SUB: begin
+                    operation = 2'b11;
+                end
+                I_MOVE: begin
+                    operation = 2'b01;
+                end
+                default: begin //AND E OR
+                    operation = 2'b10;
+                end
+            endcase
+        end
+        STORE_1 : begin
+            next_state = STORE_2;
+            addr_sel = 1'b1;
+        end
+        STORE_2 : begin
+            next_state = BUSCA_INSTR;
+            addr_sel = 1'b1;
+            ram_write_enable = 1'b1;
         end
         LOAD_1 : begin
             next_state = LOAD_2;
